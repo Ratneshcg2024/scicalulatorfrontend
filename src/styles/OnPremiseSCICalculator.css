@@ -1,0 +1,15 @@
+@media (max-width: 576px) {
+
+    #country option{
+        font-size: 0.5rem;
+    }
+    .onpremise-form{
+        width: auto;;
+        margin: 1rem;
+    }
+}
+@media (min-width: 576px) {
+    .onpremise-form{
+        width: auto;
+    }
+}

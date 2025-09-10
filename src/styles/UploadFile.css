@@ -1,0 +1,22 @@
+@media(max-width: 576px) {
+    .upload-box {
+        width:auto;
+        margin: 0 1rem 0 1rem;
+        padding: 2rem;
+    }
+    .tab-box{
+        margin-left:0;
+        display:flex;
+        justify-content: center;
+    }
+}
+@media(min-width: 576px) {
+    .upload-box {
+        width: auto;
+    }
+}
+@media(min-width: 768px) {
+    .tab-box{
+        margin-left:4rem;
+    }
+}

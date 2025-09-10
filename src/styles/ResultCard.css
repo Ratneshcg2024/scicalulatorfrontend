@@ -1,0 +1,6 @@
+table tr td:first-child{
+    text-align: start;
+}
+table tr td:nth-child(2){
+    text-align: start;
+}
