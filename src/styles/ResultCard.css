@@ -1,6 +1,49 @@
-table tr td:first-child{
+table tr td:first-child {
     text-align: start;
 }
-table tr td:nth-child(2){
+
+table tr td:nth-child(2) {
     text-align: start;
+}
+
+
+.card-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 13rem;
+    box-shadow: 0 0 1rem rgba(0, 0, 0, 0.15) !important;
+    transition: all 0.3s ease-out;
+    
+}
+.card-box:hover{
+    scale: 1.03;
+    
+}
+
+.card-box h5 {
+    font-weight: bold;
+    color: #0070ad;
+}
+
+.card-box img {
+    width: 5rem;
+}
+
+.score_value {
+    font-family: Inter, sans-serif;
+    font-size: 1.5rem;
+    color: rgb(0, 112, 173);
+}
+
+.score_unit {
+    font-size: 0.9rem;
+    color: rgb(73, 80, 87);
+}
+
+.upper-card-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
