@@ -1,33 +1,65 @@
-import React, { useEffect, useState } from 'react';
-import '../styles/CloudSCICalculator.css';
+import React, { useEffect, useState } from "react";
+import "../styles/CloudSCICalculator.css";
 import { fetchInstanceType, fetchRegion } from "../api/cloud";
 import Select from "react-select";
- 
-export default function InstanceForm({ index, tierId, cloudId, onInstanceChange, formData = {}, errors = {} }) {
+
+export default function InstanceForm({
+  index,
+  tierId,
+  cloudId,
+  onInstanceChange,
+  formData = {},
+  errors = {},
+}) {
   const [instanceType, setInstanceType] = useState([]);
   const [region, setRegion] = useState([]);
- 
-  const options = instanceType.map(i => ({ value: i.id, label: i.instanceClass }));
-  const regionOptions = region.map(i => ({ value: i.id, label: `${i.region} (${i.location})` }));
- 
+  const [loadingInstanceType, setLoadingInstanceType] = useState(false);
+  const [loadingRegion, setLoadingRegion] = useState(false);
+
+  const options = instanceType.map((i) => ({
+    value: i.id,
+    label: i.instanceClass,
+  }));
+  const regionOptions = region.map((i) => ({
+    value: i.id,
+    label: `${i.region} (${i.location})`,
+  }));
+
   useEffect(() => {
     if (!cloudId) return;
+
     async function loadData() {
       try {
+        setLoadingInstanceType(true);
         const resInstance = await fetchInstanceType(cloudId);
         if (resInstance.status === 200) setInstanceType(resInstance.data);
+        setLoadingInstanceType(false);
+
+        setLoadingRegion(true);
         const resRegion = await fetchRegion(cloudId);
         if (resRegion.status === 200) setRegion(resRegion.data);
+        setLoadingRegion(false);
       } catch (err) {
+        setLoadingInstanceType(false);
+        setLoadingRegion(false);
         alert(`Error fetching data: ${err}`);
       }
     }
+
     loadData();
   }, [cloudId]);
- 
-  const handleChange = e => {
+
+  const handleChange = (e) => {
     let val = e.target.value;
-    if (["cpuCoresAllocated", "storageVolumeGB", "cpuUtilization", "memoryUtilization", "similarInstances"].includes(e.target.name)) {
+    if (
+      [
+        "cpuCoresAllocated",
+        "storageVolumeGB",
+        "cpuUtilization",
+        "memoryUtilization",
+        "similarInstances",
+      ].includes(e.target.name)
+    ) {
       val = val === "" ? "" : Number(val);
       if (e.target.name === "cpuCoresAllocated" && val < 1) val = 1;
       if (e.target.name === "similarInstances" && val < 1) val = 1;
@@ -35,47 +67,81 @@ export default function InstanceForm({ index, tierId, cloudId, onInstanceChange,
     }
     onInstanceChange(tierId, index - 1, e.target.name, val);
   };
- 
+
   return (
     <>
-      <div className="row"><div className="col-2 px-4 py-2"><div className="fw-bold fs-5 instance_heading text-nowrap">Instance {index}</div></div></div>
+      <div className="row">
+        <div className="col-2 px-4 py-2">
+          <div className="fw-bold fs-5 instance_heading text-nowrap">
+            Instance {index}
+          </div>
+        </div>
+      </div>
       <div className="row">
         <div className="col-12 col-md-6">
           <div className="row">
             <div className="col-12 col-md-6 px-4 py-2">
-              <label htmlFor="instanceTypeId" className="form-label">Instance Type</label>
+              <label htmlFor="instanceTypeId" className="form-label">
+                Instance Type
+              </label>
               <Select
-                name="instanceTypeId"
-                id="instanceTypeId"
-                value={options.find(o => o.value === formData.instanceTypeId) || null}
-                onChange={s => handleChange({ target: { name: "instanceTypeId", value: s ? s.value : "" } })}
-                options={options}
-                placeholder="Select Instance Type"
-                isSearchable
-                className={errors.instanceTypeId ? "is-invalid" : ""}
-              />
+  name="instanceTypeId"
+  id="instanceTypeId"
+  value={options.find((o) => o.value === formData.instanceTypeId) || null}
+  onChange={(s) =>
+    handleChange({ target: { name: "instanceTypeId", value: s ? s.value : "" } })
+  }
+  options={options}
+  placeholder={
+    !cloudId
+      ? "Select Cloud Provider"
+      : loadingInstanceType
+      ? "Loading..."
+      : "Select Instance Type"
+  }
+  isSearchable
+  isDisabled={!cloudId || loadingInstanceType}
+  className={errors.instanceTypeId ? "is-invalid" : ""}
+/>
+
               <div className="invalid-feedback d-block">{errors.instanceTypeId}</div>
             </div>
+
             <div className="col-12 col-md-6 px-4 py-2">
-              <label htmlFor="regionId" className="form-label">Region</label>
-              <Select
-                name="regionId"
-                id="regionId"
-                value={regionOptions.find(o => o.value === formData.regionId) || null}
-                onChange={s => handleChange({ target: { name: "regionId", value: s ? s.value : "" } })}
-                options={regionOptions}
-                placeholder="Select Region"
-                isSearchable
-                className={errors.regionId ? "is-invalid" : ""}
-              />
+              <label htmlFor="regionId" className="form-label">
+                Region
+              </label>
+            <Select
+  name="regionId"
+  id="regionId"
+  value={regionOptions.find((o) => o.value === formData.regionId) || null}
+  onChange={(s) =>
+    handleChange({ target: { name: "regionId", value: s ? s.value : "" } })
+  }
+  options={regionOptions}
+  placeholder={
+    !cloudId
+      ? "Select Cloud Provider"
+      : loadingRegion
+      ? "Loading..."
+      : "Select Region"
+  }
+  isSearchable
+  isDisabled={!cloudId || loadingRegion}
+  className={errors.regionId ? "is-invalid" : ""}
+/>
+
               <div className="invalid-feedback d-block">{errors.regionId}</div>
             </div>
           </div>
         </div>
+
         <div className="col-12 col-md-6">
           <div className="row">
             <div className="col-12 col-md-6 px-4 py-2">
-              <label htmlFor="cpuCoresAllocated" className="form-label">Apps running on the instance</label>
+              <label htmlFor="cpuCoresAllocated" className="form-label">
+                Apps running on the instance
+              </label>
               <input
                 type="number"
                 className={`form-control ${errors.cpuCoresAllocated ? "is-invalid" : ""}`}
@@ -89,7 +155,9 @@ export default function InstanceForm({ index, tierId, cloudId, onInstanceChange,
               <div className="invalid-feedback">{errors.cpuCoresAllocated}</div>
             </div>
             <div className="col-12 col-md-6 px-4 py-2">
-              <label htmlFor="similarInstances" className="form-label">Similar Instances</label>
+              <label htmlFor="similarInstances" className="form-label">
+                Similar Instances
+              </label>
               <input
                 type="number"
                 className={`form-control ${errors.similarInstances ? "is-invalid" : ""}`}
@@ -104,11 +172,15 @@ export default function InstanceForm({ index, tierId, cloudId, onInstanceChange,
           </div>
         </div>
       </div>
+
+      {/* Other fields: CPU, Storage, Memory */}
       <div className="row">
         <div className="col-12 col-md-6 px-4 py-2">
           <div className="row">
             <div className="col-12 col-md-6 px-4 py-2">
-              <label htmlFor="cpuUtilization" className="form-label">CPU Utilization (%)</label>
+              <label htmlFor="cpuUtilization" className="form-label">
+                CPU Utilization (%)
+              </label>
               <input
                 type="number"
                 className={`form-control ${errors.cpuUtilization ? "is-invalid" : ""}`}
@@ -122,7 +194,9 @@ export default function InstanceForm({ index, tierId, cloudId, onInstanceChange,
               <div className="invalid-feedback">{errors.cpuUtilization}</div>
             </div>
             <div className="col-12 col-md-6 px-4 py-2">
-              <label htmlFor="storageVolumeGB" className="form-label">Storage Volume (GB)</label>
+              <label htmlFor="storageVolumeGB" className="form-label">
+                Storage Volume (GB)
+              </label>
               <input
                 type="number"
                 className={`form-control ${errors.storageVolumeGB ? "is-invalid" : ""}`}
@@ -137,10 +211,13 @@ export default function InstanceForm({ index, tierId, cloudId, onInstanceChange,
             </div>
           </div>
         </div>
+
         <div className="col-12 col-md-6">
           <div className="row">
             <div className="col-12 px-4 py-2">
-              <label htmlFor="memoryUtilization" className="form-label">Memory Utilization</label>
+              <label htmlFor="memoryUtilization" className="form-label">
+                Memory Utilization
+              </label>
               <div className="row">
                 <div className="col-9">
                   <input

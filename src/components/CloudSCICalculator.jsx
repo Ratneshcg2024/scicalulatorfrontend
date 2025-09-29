@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import InstanceForm from "./InstanceForm";
 import "../styles/CloudSCICalculator.css";
-import ResultCard from "./ResultCard";
 import { calculateSCI, fetchCloudProvider } from "../api/cloud";
 import Loader from "./Loader";  // use your loader component
 import * as yup from "yup";
 import InstanceResultsTable from "./InstanceResultsTable";
- 
+import SCIResultCard from "./SCIResultCard";
+
 const cloudSchema = yup.object().shape({
     applicationName: yup.string().required("Application name is required"),
     cloudProvider: yup.string().required("Cloud provider is required"),
@@ -35,13 +35,14 @@ const cloudSchema = yup.object().shape({
     duration: yup.number().typeError("Duration must be a number").min(0, "Duration cannot be negative").required("Duration is required"),
     workloadSize: yup.string().required("Workload size is required"),
 });
- 
+
 export default function CloudSCICalculator() {
+    const [showResult, setShowResult] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
     const [formData, setFormData] = useState({
         applicationName: "",
         cloudProvider: "",
-        duration: "",
+        duration: 1,
         workloadSize: "NA",
         tiers: [
             {
@@ -56,7 +57,7 @@ export default function CloudSCICalculator() {
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [show, setShow] = useState(false);
- 
+
     useEffect(() => {
         async function loadData() {
             try {
@@ -69,7 +70,7 @@ export default function CloudSCICalculator() {
         }
         loadData();
     }, []);
- 
+
     const handleTierChange = (tierId, field, value) => {
         setFormData((prev) => {
             const updatedTiers = prev.tiers.map((tier) => {
@@ -77,13 +78,13 @@ export default function CloudSCICalculator() {
                     if (field === "noOfInstances") {
                         const num = Math.max(0, Number(value));
                         let newInstances = tier.instancesData;
- 
+
                         if (num < tier.noOfInstances) {
                             newInstances = tier.instancesData.slice(0, num);
                         }
                         return { ...tier, noOfInstances: num, instancesData: newInstances };
                     }
- 
+
                     return tier;
                 }
                 return tier;
@@ -91,7 +92,7 @@ export default function CloudSCICalculator() {
             return { ...prev, tiers: updatedTiers };
         });
     };
- 
+
     const addInstance = (tierId) => {
         setFormData((prev) => {
             const updatedTiers = prev.tiers.map((tier) => {
@@ -123,7 +124,7 @@ export default function CloudSCICalculator() {
             return { ...prev, tiers: updatedTiers };
         });
     };
- 
+
     const handleInstanceChange = (tierId, index, field, value) => {
         setFormData((prev) => {
             const updatedTiers = prev.tiers.map((tier) => {
@@ -148,52 +149,51 @@ export default function CloudSCICalculator() {
             return { ...prev, tiers: updatedTiers };
         });
     };
- 
+
     const sumSimilarInstances = (tier) => tier.instancesData.reduce((acc, i) => acc + (i.similarInstances || 0), 0);
- 
+
     const getMappedInstances = () => {
-    let allInstances = [];
-    let counter = 1; // start from 1
- 
-    formData.tiers.forEach((tier) => {
-        tier.instancesData.forEach((inst) => {
-            const count = inst.similarInstances || 1;
-            for (let i = 0; i < count; i++) {
-                allInstances.push({
-                    ...inst,
-                    id: counter,        // unique instance id (1,2,3…)
-                    groupId: tier.id,   // same for similar instances
-                    cpuUtilization: parseFloat(inst.cpuUtilization || 0),
-                    memoryUtilization: parseFloat(inst.memoryUtilization || 0),
-                    memoryUnit: inst.memoryUnit || "percent",
-                    cpuCoresAllocated: parseInt(inst.cpuCoresAllocated || 1),
-                    storageVolumeGB: parseFloat(inst.storageVolumeGB || 0),
-                    tier: tier.id,
-                });
-                counter++;
-            }
+        let allInstances = [];
+        let counter = 1; // start from 1
+
+        formData.tiers.forEach((tier) => {
+            tier.instancesData.forEach((inst) => {
+                const count = inst.similarInstances || 1;
+                for (let i = 0; i < count; i++) {
+                    allInstances.push({
+                        ...inst,
+                        id: counter,        // unique instance id (1,2,3…)
+                        groupId: tier.id,   // same for similar instances
+                        cpuUtilization: parseFloat(inst.cpuUtilization || 0),
+                        memoryUtilization: parseFloat(inst.memoryUtilization || 0),
+                        memoryUnit: inst.memoryUnit || "percent",
+                        cpuCoresAllocated: parseInt(inst.cpuCoresAllocated || 1),
+                        storageVolumeGB: parseFloat(inst.storageVolumeGB || 0),
+                        tier: tier.id,
+                    });
+                    counter++;
+                }
+            });
         });
-    });
- 
-    return allInstances;
-};
- 
- 
-    // remove tier handler
+
+        return allInstances;
+    };
+
+
     const removeTier = (tierId) => {
         setFormData((prev) => ({
             ...prev,
             tiers: prev.tiers.filter((tier) => tier.id !== tierId),
         }));
     };
- 
- 
+
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErrors({});
         setShow(false);
         setResult(null);
- 
+
         try {
             await cloudSchema.validate(formData, { abortEarly: false });
             setLoading(true);
@@ -208,10 +208,11 @@ export default function CloudSCICalculator() {
                 })),
             };
             console.log("Payload sent:", payload);// to addd a tier  in each array rack
- 
+
             const response = await calculateSCI(payload);
             if (response.status === 200) {
                 setResult(response.data);
+                setShowResult(true);
                 console.log(response.data);
                 setShow(true);
             } else {
@@ -261,7 +262,7 @@ export default function CloudSCICalculator() {
             ],
         }));
     };
- 
+
     return (
         <div className="container mb-3 mt-4">
             <h3 className="text-center fw-bold" style={{ color: "rgb(0, 112, 173)" }}>
@@ -304,9 +305,9 @@ export default function CloudSCICalculator() {
                         <div className="invalid-feedback">{errors.cloudProvider}</div>
                     </div>
                 </div>
- 
- 
- 
+
+
+
                 {/* Tiers and Instances */}
                 {formData.tiers.map((tier, i) => (
                     <div key={tier.id} className="mb-3 border p-3 rounded">
@@ -320,8 +321,8 @@ export default function CloudSCICalculator() {
                                 Remove Tier
                             </button>
                         </div>
- 
- 
+
+
                         <div className="mb-2 row">
                             <label className="col-form-label col-6">No of Instances</label>
                             <div className="col-6">
@@ -335,7 +336,7 @@ export default function CloudSCICalculator() {
                                 <div className="invalid-feedback">{errors?.tiers?.[i]?.noOfInstances}</div>
                             </div>
                         </div>
- 
+
                         {tier.instancesData.map((inst, idx) => (
                             <InstanceForm
                                 key={idx}
@@ -349,12 +350,18 @@ export default function CloudSCICalculator() {
                         ))}
                         <button
                             type="button"
-                            className="btn btn-primary mb-3"
+                            className="btn btn-primary mb-2"
                             disabled={sumSimilarInstances(tier) >= tier.noOfInstances}
                             onClick={() => addInstance(tier.id)}
                         >
                             Add Instance
                         </button>
+                        {sumSimilarInstances(tier) < tier.noOfInstances && (
+                            <div className="text-danger small">
+                                Please add all instances before calculating
+                            </div>
+                        )}
+
                     </div>
                 ))}
                 <div className="mb-3">
@@ -370,7 +377,7 @@ export default function CloudSCICalculator() {
                             type="number"
                             className={`form-control ${errors.duration ? "is-invalid" : ""}`}
                             name="duration"
-                            min={0}
+                            min={1}
                             value={formData.duration}
                             onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
                         />
@@ -395,20 +402,31 @@ export default function CloudSCICalculator() {
                         <div className="invalid-feedback">{errors.workloadSize}</div>
                     </div>
                 </div>
- 
-                <button type="submit" className="btn btn-success mt-3" disabled={loading}>
-                    {loading ? <Loader /> : "Calculate SCI"}
+                <button
+                    type="submit"
+                    className="btn btn-outline-primary mt-3 mx-auto d-block"
+                    style={{ pointerEvents: loading ? "none" : "auto" }}
+                >
+                    {loading ? <><Loader /> Calculating...</>: "Calculate SCI"}
                 </button>
+
             </form>
             {show && result && (
                 <>
-                    <ResultCard
+                    {/* <ResultCard
                         sci={result.sci}
                         energy={result.totalOperationalEnergy}
                         operational={result.totalOperationalEmissions}
                         embodied={result.totalEmbodiedEmissions}
+                    /> */}
+                    <SCIResultCard
+                        sci={result.sci}
+                        energy={result.totalOperationalEnergy}
+                        operational={result.totalOperationalEmissions}
+                        embodied={result.totalEmbodiedEmissions}
+                        showResult={showResult}
                     />
- 
+
                     <div className="text-center mt-3">
                         <button
                             className="btn btn-outline-secondary"
@@ -419,14 +437,13 @@ export default function CloudSCICalculator() {
                                 : "Show Detailed Results"}
                         </button>
                     </div>
- 
+
                     {showDetails && (
                         <InstanceResultsTable instanceResults={result.instanceResults} />
                     )}
                 </>
             )}
- 
+          
         </div>
     );
 }
- 
