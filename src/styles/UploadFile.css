@@ -54,3 +54,16 @@ button:disabled {
   opacity: 1; /* prevent dimming */
   cursor: not-allowed;
 }
+
+.download-btn{
+    background: linear-gradient(110deg, rgb(25 93 56), rgb(16 124 66), #21a365);
+    color: white;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+.download-btn:hover{
+    background: linear-gradient(272deg, rgb(25 93 56), rgb(16 124 66), #21a365);
+    color:white;
+    font-weight: bold;
+    scale: 1.03;
+}

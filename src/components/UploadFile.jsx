@@ -3,6 +3,9 @@ import FileIcon from '../assets/excel_icon.png';
 import '../styles/UploadFile.css';
 import { FaTrash, FaExclamationCircle } from "react-icons/fa";
 import Loader from "./Loader"; // Your loader component
+import { uploadMultiApp } from '../api/cloud';
+import { FaFileExcel } from "react-icons/fa";
+
 
 export default function UploadFile() {
     const [file, setFile] = useState(null);
@@ -49,23 +52,18 @@ export default function UploadFile() {
 
         setError("");
         setLoading(true);
+
         const formData = new FormData();
         formData.append("file", file);
 
         try {
-            const response = await fetch("http://localhost:5153/api/ExcelSCI/upload-multi-app", {
-                method: "POST",
-                body: formData,
-            });
+            const res = await uploadMultiApp(formData); // call from cloud.js
 
-            if (!response.ok) throw new Error("Upload failed");
-
-            const data = await response.json();
-            const url = data.downloadUrl;
+            const url = res.data.downloadUrl;
             setExcelUrl(url);
 
             // Extract filename from URL
-            const urlParts = url.split('/');
+            const urlParts = url.split("/");
             setFileName(urlParts[urlParts.length - 1]);
         } catch (err) {
             console.error(err);
@@ -75,8 +73,18 @@ export default function UploadFile() {
         }
     };
 
+    const downloadTemplate = () =>{
+        window.open("/SCI_Inputs_Template.xlsx", "_blank");
+    }
     return (
         <div className="container shadow rounded p-3">
+            <div className="row">
+                <div className="col-12 ms-auto p-3">
+                    <button className='btn d-block ms-auto download-btn' onClick={downloadTemplate}>
+                        <FaFileExcel style={{ verticalAlign: "middle" }} /> Download Template
+                    </button>
+                </div>
+            </div>
             <form onSubmit={handleSubmit}>
                 <div
                     className="upload-box col-12"
@@ -124,7 +132,7 @@ export default function UploadFile() {
                                 }}
                                 style={{ color: "red", marginLeft: "1.5rem", cursor: "pointer" }}
                             >
-                                <FaTrash /> 
+                                <FaTrash />
                             </span>
 
                         </div>

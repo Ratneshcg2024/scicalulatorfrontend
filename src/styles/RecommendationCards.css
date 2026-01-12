@@ -1,0 +1,59 @@
+
+.recommendation-card {
+  border-radius: 12px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.recommendation-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+.icon-badge {
+  background: #f8f9fa;
+  border-radius: 50%;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-backdrop {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 999;
+}
+.modal-box {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+.modal-content ul {
+  padding-left: 20px;
+}
+
+
+.config-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 14px;
+}
+
+.config-row span:first-child {
+  font-weight: 500;
+}
+
+.config-row span:last-child {
+  color: #2563eb; /* Blue for savings or highlight */
+}

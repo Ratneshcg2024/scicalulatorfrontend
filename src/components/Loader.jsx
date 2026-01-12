@@ -1,5 +1,5 @@
 import React from 'react';
-import loaderGif from '../assets/loader.png';
+import loaderGif from '../assets/logo.webp';
 import '../styles/Loader.css';
 
 export default function Loader({ size = 6 }) {

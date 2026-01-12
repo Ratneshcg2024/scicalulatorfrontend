@@ -4,22 +4,42 @@
     #workloadSize option,
     #memoryUnit option,
     #instanceName option,
-    #region option{
+    #region option {
         font-size: 0.5rem;
     }
 
-    .instance_heading{
+    .instance_heading {
         font-size: 1.2rem;
     }
 }
+
 @media (min-width: 576px) and (max-width:746px) {
 
     #cloudProvider option,
     #workloadSize option,
     #memoryUnit option,
     #instanceName option,
-    #region option{
+    #region option {
         font-size: 0.5rem;
     }
-    
+
+
+}
+
+.delete-instance-icon {
+    cursor: pointer;
+    color: #727986;
+}
+
+.delete-instance-icon:hover {
+    color: #dc3545;
+}
+
+.instance-main-box {
+    border-radius: 5px;
+    outline: 2px solid #dc3545;
+    outline-offset: -2px;
+}
+.instance-seq-head{
+    color: red;
 }

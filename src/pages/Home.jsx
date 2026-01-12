@@ -68,6 +68,7 @@ export default function Home() {
             <Box sx={{ mt: 3 }}>
               {showTab === 0 && <CloudSCICalculator />}
               {showTab === 1 && <UploadFile />}
+              {/* {showTab === 1 && <NewUpload />} */}
             </Box>
 
           </Box>
